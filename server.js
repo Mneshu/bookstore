@@ -12,7 +12,7 @@ app.use(express.static('public'));
 
 // Session setup (stores session in server memory — fine for development)
 app.use(session({
-  secret: 'bookstore-secret-key-change-in-production',
+  secret: process.env.SESSION_SECRET || 'fallback-dev-secret',,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day

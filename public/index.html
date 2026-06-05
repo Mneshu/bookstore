@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 My Bookstore</title>
+
+  <div id="user-info" style="display: flex; align-items: center; gap: 10px;">
+  <span id="welcome-message"></span>
+  <button id="logout-btn" style="background:#b12704; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Logout</button>
+  </div>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f7f1;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1000px;
+      margin: 0 auto 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    h1 {
+      color: #5a4a3a;
+      margin: 0;
+    }
+    #search-bar {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 250px;
+      font-size: 16px;
+    }
+    #cart-icon {
+      font-size: 24px;
+      cursor: pointer;
+      position: relative;
+      background: none;
+      border: none;
+    }
+    #cart-count {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: #b12704;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 12px;
+    }
+    #book-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .book-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 250px;
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .book-card:hover {
+      transform: translateY(-5px);
+    }
+    .book-card img {
+      max-width: 120px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .book-card h3 {
+      margin: 10px 0 5px;
+      font-size: 1.1em;
+    }
+    .book-card .author {
+      color: #777;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+    .book-card .price {
+      font-weight: bold;
+      font-size: 1.2em;
+      color: #b12704;
+    }
+    .book-card a {
+      text-decoration: none;
+      color: inherit;
+    }
+    .book-card button {
+      background-color: #5a4a3a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .book-card button:hover {
+      background-color: #3e2f24;
+    }
+    /* Cart Modal */
+    #cart-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #cart-modal.open {
+      display: flex;
+    }
+    .cart-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .cart-content h2 {
+      margin-top: 0;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .cart-item-info {
+      flex: 1;
+    }
+    .cart-item-title {
+      font-weight: bold;
+    }
+    .cart-item-controls button {
+      background: #eee;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .cart-item-controls span {
+      margin: 0 5px;
+    }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #b12704;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .cart-total {
+      font-size: 1.2em;
+      text-align: right;
+      margin-top: 15px;
+    }
+    .close-btn {
+      background: #5a4a3a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .no-results {
+      text-align: center;
+      font-size: 1.2em;
+      margin-top: 30px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📚 Our Bookstore</h1>
+    <input type="text" id="search-bar" placeholder="Search by title or author...">
+    <button id="cart-icon">
+      🛒
+      <span id="cart-count">0</span>
+    </button>
+  </header>
+
+  <div id="book-list">
+    <p class="loading">Loading books...</p>
+  </div>
+
+  <!-- Cart Modal -->
+  <div id="cart-modal">
+  <div class="cart-content">
+    <h2>Your Cart</h2>
+    <div id="cart-items"></div>
+    <div class="cart-total" id="cart-total"></div>
+    <div id="order-message" style="margin:10px 0; font-weight:bold;"></div>
+    <button id="place-order-btn" class="close-btn" style="background:#b12704; margin-right:10px;">Place Order</button>
+    <button id="close-cart" class="close-btn">Continue Shopping</button>
+  </div>
+</div>
+
+  <script>
+
+
+        // Check if user is logged in; if not, redirect to login page
+        async function checkAuth() {
+        try {
+            const res = await fetch('/api/me');
+            if (!res.ok) {
+            window.location.href = '/login.html';  // redirect if not logged in
+            }
+        } catch (err) {
+            window.location.href = '/login.html';
+        }
+        }
+        checkAuth();
+
+    // ---------- Cart Functions (using localStorage) ----------
+    function getCart() {
+      const cart = localStorage.getItem('bookstore-cart');
+      return cart ? JSON.parse(cart) : [];
+    }
+
+    function saveCart(cart) {
+      localStorage.setItem('bookstore-cart', JSON.stringify(cart));
+      updateCartCount();
+    }
+
+    function addToCart(book) {
+      const cart = getCart();
+      const existing = cart.find(item => item.id === book.id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({
+          id: book.id,
+          title: book.title,
+          author: book.author,
+          price: book.price,
+          quantity: 1
+        });
+      }
+      saveCart(cart);
+      alert(`${book.title} added to cart!`);
+    }
+
+    function removeFromCart(bookId) {
+      let cart = getCart();
+      cart = cart.filter(item => item.id !== bookId);
+      saveCart(cart);
+      renderCartItems();
+    }
+
+    function changeQuantity(bookId, delta) {
+      const cart = getCart();
+      const item = cart.find(i => i.id === bookId);
+      if (item) {
+        item.quantity += delta;
+        if (item.quantity <= 0) {
+          cart = cart.filter(i => i.id !== bookId);
+        }
+        saveCart(cart);
+        renderCartItems();
+      }
+    }
+
+    function updateCartCount() {
+      const cart = getCart();
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById('cart-count').textContent = count;
+    }
+
+    function renderCartItems() {
+      const cart = getCart();
+      const container = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        container.innerHTML = '<p>Your cart is empty.</p>';
+        totalEl.textContent = '';
+        return;
+      }
+
+      let html = '';
+      let total = 0;
+      cart.forEach(item => {
+        const lineTotal = item.price * item.quantity;
+        total += lineTotal;
+        html += `
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <div class="cart-item-title">${item.title}</div>
+              <div>R${item.price.toFixed(2)} each</div>
+            </div>
+            <div class="cart-item-controls">
+              <button onclick="changeQuantity(${item.id}, -1)">-</button>
+              <span>${item.quantity}</span>
+              <button onclick="changeQuantity(${item.id}, 1)">+</button>
+            </div>
+            <button class="remove-btn" onclick="removeFromCart(${item.id})">🗑️</button>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      totalEl.textContent = `Total: R${total.toFixed(2)}`;
+    }
+       
+    async function placeOrder() {
+  const cart = getCart();
+  if (cart.length === 0) {
+    alert('Your cart is empty!');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: cart })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      document.getElementById('order-message').innerHTML = `✅ Order #${data.orderId} placed! Total: $${data.total.toFixed(2)}`;
+      localStorage.removeItem('bookstore-cart');  // clear cart
+      updateCartCount();
+      renderCartItems();    // show empty cart
+      // Disable the Place Order button to avoid double‑orders
+      document.getElementById('place-order-btn').disabled = true;
+    } else {
+      document.getElementById('order-message').innerHTML = `❌ ${data.error || 'Order failed'}`;
+    }
+  } catch (err) {
+    document.getElementById('order-message').innerHTML = '❌ Network error. Try again.';
+  }
+}
+    
+
+
+
+    // ---------- Global book list and rendering ----------
+    let allBooks = [];  // will hold the full list from API
+
+    function renderBooks(books) {
+      const container = document.getElementById('book-list');
+      container.innerHTML = '';
+
+      if (books.length === 0) {
+        container.innerHTML = '<p class="no-results">No books match your search.</p>';
+        return;
+      }
+
+      books.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+
+        const imgSrc = book.cover_url || 'https://via.placeholder.com/120x180?text=No+Cover';
+        
+        card.innerHTML = `
+          <a href="/book.html?id=${book.id}">
+            <img src="${imgSrc}" alt="${book.title}">
+            <h3>${book.title}</h3>
+            <p class="author">by ${book.author}</p>
+            <p class="price">$${book.price.toFixed(2)}</p>
+          </a>
+          <button class="add-to-cart-btn">Add to Cart</button>
+        `;
+
+        card.querySelector('.add-to-cart-btn').addEventListener('click', () => {
+          addToCart(book);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function filterBooks(searchTerm) {
+      const term = searchTerm.toLowerCase().trim();
+      if (term === '') {
+        renderBooks(allBooks);
+        return;
+      }
+      const filtered = allBooks.filter(book => 
+        book.title.toLowerCase().includes(term) || 
+        book.author.toLowerCase().includes(term)
+      );
+      renderBooks(filtered);
+    }
+
+    // ---------- Load Books from API ----------
+    async function loadBooks() {
+      try {
+        const response = await fetch('/api/books');
+        const books = await response.json();
+        allBooks = books;   // store the full list globally
+        renderBooks(allBooks);
+      } catch (err) {
+        document.getElementById('book-list').innerHTML = '<p>Failed to load books. Please try again.</p>';
+        console.error(err);
+      }
+    }
+
+    // ---------- Search bar event ----------
+    document.getElementById('search-bar').addEventListener('input', (e) => {
+      filterBooks(e.target.value);
+    });
+
+    // ---------- Cart Modal Open/Close ----------
+    document.getElementById('cart-icon').addEventListener('click', () => {
+    document.getElementById('order-message').innerHTML = '';   // clear any previous message
+    document.getElementById('place-order-btn').disabled = false;
+    renderCartItems();
+    document.getElementById('cart-modal').classList.add('open');
+    });
+
+    document.getElementById('close-cart').addEventListener('click', () => {
+      document.getElementById('cart-modal').classList.remove('open');
+    });
+
+    document.getElementById('cart-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('cart-modal')) {
+        document.getElementById('cart-modal').classList.remove('open');
+      }
+    });
+
+    document.getElementById('place-order-btn').addEventListener('click', placeOrder);
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      updateCartCount();
+      loadBooks();
+    });
+
+
+        async function updateUserUI() {
+  try {
+    const res = await fetch('/api/me');
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('welcome-message').textContent = `👋 Welcome, ${data.username}`;
+      document.getElementById('user-info').style.display = 'flex';
+      document.getElementById('login-link')?.remove(); // if you have a login link
+    } else {
+      // Not logged in – show login/signup links instead
+      document.getElementById('user-info').style.display = 'none';
+    }
+  } catch (e) {}
+}
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.reload();
+});
+
+updateUserUI();
+
+  </script>
+
+  
+
+</body>
+</html>

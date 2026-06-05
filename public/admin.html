@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Add Book</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f2eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .admin-form {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #5a4a3a;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #5a4a3a;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3e2f24;
+    }
+    .message {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <div class="admin-form">
+    <h2>📚 Add a New Book</h2>
+    <form id="add-book-form">
+      <input type="text" id="title" placeholder="Title *" required>
+      <input type="text" id="author" placeholder="Author *" required>
+      <input type="number" step="0.01" id="price" placeholder="Price *" required>
+      <input type="url" id="cover_url" placeholder="Cover Image URL (optional)">
+      <textarea id="description" rows="3" placeholder="Description (optional)"></textarea>
+      <button type="submit">Add Book</button>
+    </form>
+    <div id="message" class="message"></div>
+    <p style="text-align:center; margin-top:15px;"><a href="/">← Back to Store</a></p>
+  </div>
+
+  <script>
+
+            // Check if user is logged in; if not, redirect to login page
+        async function checkAuth() {
+        try {
+            const res = await fetch('/api/me');
+            if (!res.ok) {
+            window.location.href = '/login.html';  // redirect if not logged in
+            }
+        } catch (err) {
+            window.location.href = '/login.html';
+        }
+        }
+        checkAuth();    
+
+        
+    const form = document.getElementById('add-book-form');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById('title').value;
+      const author = document.getElementById('author').value;
+      const price = parseFloat(document.getElementById('price').value);
+      const cover_url = document.getElementById('cover_url').value;
+      const description = document.getElementById('description').value;
+
+      try {
+        const response = await fetch('/api/books', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, author, price, cover_url, description })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          messageDiv.className = 'message success';
+          messageDiv.textContent = '✅ ' + data.message;
+          form.reset();
+        } else {
+          messageDiv.className = 'message error';
+          messageDiv.textContent = '❌ ' + (data.error || 'Something went wrong');
+        }
+      } catch (err) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = '❌ Network error. Is the server running?';
+      }
+    });
+  </script>
+</body>
+</html>

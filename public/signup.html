@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Bookstore</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f7f1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+    h2 { color: #5a4a3a; margin-top: 0; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #5a4a3a;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #3e2f24; }
+    .message { text-align: center; font-weight: bold; margin-top: 10px; }
+    .error { color: red; }
+    .success { color: green; }
+    a { color: #5a4a3a; }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>📝 Sign Up</h2>
+    <form id="signup-form">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+    <div id="message" class="message"></div>
+    <p style="text-align:center;">Already have an account? <a href="/login.html">Log in</a></p>
+  </div>
+
+  <script>
+
+
+
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        const msgDiv = document.getElementById('message');
+        if (res.ok) {
+          msgDiv.className = 'message success';
+          msgDiv.textContent = '✅ ' + data.message;
+          setTimeout(() => { window.location.href = '/'; }, 1000);
+        } else {
+          msgDiv.className = 'message error';
+          msgDiv.textContent = '❌ ' + (data.error || 'Signup failed');
+        }
+      } catch (err) {
+        document.getElementById('message').textContent = '❌ Network error';
+      }
+    });
+  </script>
+</body>
+</html>

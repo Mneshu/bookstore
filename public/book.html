@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Details</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f7f1;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      padding: 30px;
+    }
+    .book-cover {
+      flex: 0 0 250px;
+      margin-right: 30px;
+      text-align: center;
+    }
+    .book-cover img {
+      max-width: 100%;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .book-info {
+      flex: 1;
+    }
+    h1 {
+      margin-top: 0;
+      color: #5a4a3a;
+    }
+    .author {
+      font-style: italic;
+      color: #777;
+      margin-bottom: 20px;
+    }
+    .price {
+      font-weight: bold;
+      font-size: 1.5em;
+      color: #b12704;
+      margin-bottom: 20px;
+    }
+    .description {
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    .back-btn {
+      display: inline-block;
+      background: #5a4a3a;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .back-btn:hover {
+      background: #3e2f24;
+    }
+    .loading, .error {
+      text-align: center;
+      font-size: 1.2em;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div id="book-container" class="loading">Loading book details...</div>
+
+  <script>
+
+    // Check if user is logged in; if not, redirect to login page
+        async function checkAuth() {
+        try {
+            const res = await fetch('/api/me');
+            if (!res.ok) {
+            window.location.href = '/login.html';  // redirect if not logged in
+            }
+        } catch (err) {
+            window.location.href = '/login.html';
+        }
+        }
+        checkAuth();
+
+
+    async function loadBookDetail() {
+      const container = document.getElementById('book-container');
+
+      // Get book ID from URL query parameter (?id=...)
+      const params = new URLSearchParams(window.location.search);
+      const bookId = params.get('id');
+
+      if (!bookId) {
+        container.innerHTML = '<p class="error">No book ID provided. <a href="/">Go back to store</a>.</p>';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/books/${bookId}`);
+        if (!response.ok) {
+          throw new Error('Book not found');
+        }
+        const book = await response.json();
+
+        // Build the page
+        const coverSrc = book.cover_url || 'https://via.placeholder.com/300x400?text=No+Cover';
+        container.innerHTML = `
+          <div class="container">
+            <div class="book-cover">
+              <img src="${coverSrc}" alt="${book.title}">
+            </div>
+            <div class="book-info">
+              <h1>${book.title}</h1>
+              <p class="author">by ${book.author}</p>
+              <p class="price">$${book.price.toFixed(2)}</p>
+              <p class="description">${book.description || 'No description available.'}</p>
+              <a href="/" class="back-btn">← Back to Store</a>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        container.innerHTML = `<p class="error">Book not found. <a href="/">Back to store</a></p>`;
+        console.error(err);
+      }
+    }
+
+    // Load on page ready
+    window.addEventListener('DOMContentLoaded', loadBookDetail);
+  </script>
+</body>
+</html>

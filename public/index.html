@@ -309,7 +309,7 @@
             </div>
             <div class="cart-item-controls">
               <button onclick="changeQuantity(${item.id}, -1)">-</button>
-              <span>${item.quantity}</span>
+              <span>R{item.quantity}</span>
               <button onclick="changeQuantity(${item.id}, 1)">+</button>
             </div>
             <button class="remove-btn" onclick="removeFromCart(${item.id})">🗑️</button>
@@ -378,7 +378,7 @@
             <img src="${imgSrc}" alt="${book.title}">
             <h3>${book.title}</h3>
             <p class="author">by ${book.author}</p>
-            <p class="price">$${book.price.toFixed(2)}</p>
+            <p class="price">R${book.price.toFixed(2)}</p>
           </a>
           <button class="add-to-cart-btn">Add to Cart</button>
         `;

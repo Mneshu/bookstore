@@ -186,6 +186,28 @@
       margin-top: 30px;
       color: #777;
     }
+
+    @media (max-width: 768px) {
+  body { padding: 10px; }
+  h1 { font-size: 1.4em !important; text-align: center; }
+  header { flex-direction: column; gap: 10px; text-align: center; }
+  #search-bar { width: 100% !important; }
+  .nav-links { flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .nav-links a { font-size: 0.8em; }
+  #book-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .book-card { width: 100% !important; padding: 10px; }
+  .book-card img { max-width: 80px !important; height: 120px !important; }
+  .book-card h3 { font-size: 0.9em; }
+  .book-card .author { font-size: 0.75em; }
+  .book-card .price { font-size: 1em; }
+  .book-card button { padding: 6px 12px; font-size: 0.75em; }
+  .cart-content { width: 95% !important; max-width: 95% !important; padding: 15px; }
+  .cart-item { flex-wrap: wrap; gap: 5px; }
+  .container { max-width: 100% !important; flex-direction: column; padding: 10px; }
+  .book-cover { flex: 0 0 100%; margin-right: 0; margin-bottom: 15px; }
+  .book-cover img { max-width: 60% !important; margin: 0 auto; display: block; }
+}
+
   </style>
 </head>
 <body>
